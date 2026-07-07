@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="睡眠問診">
+<meta name="theme-color" content="#1A5F7A">
+<title>睡眠障害外来　問診スコアリング</title>
+
+<!-- PWAマニフェスト（インライン） -->
+<script>
+const manifestData = {
+  name: "睡眠障害外来　問診スコアリング",
+  short_name: "睡眠問診",
+  start_url: "./",
+  display: "standalone",
+  background_color: "#F0F5FA",
+  theme_color: "#1A5F7A",
+  icons: [
+    { src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjM4IiBmaWxsPSIjMUE1RjdBIi8+PHRleHQgeD0iOTYiIHk9IjEyOCIgZm9udC1zaXplPSIxMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIj7wn5K4PC90ZXh0Pjwvc3ZnPg==", sizes: "192x192", type: "image/svg+xml" }
+  ]
+};
+const blob = new Blob([JSON.stringify(manifestData)], {type:"application/json"});
+const manifestUrl = URL.createObjectURL(blob);
+const link = document.createElement("link");
+link.rel = "manifest"; link.href = manifestUrl;
+document.head.appendChild(link);
+</script>
+
+<!-- Apple Touch Icon（SVGインライン） -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjM4IiBmaWxsPSIjMUE1RjdBIi8+PHRleHQgeD0iOTYiIHk9IjEyOCIgZm9udC1zaXplPSIxMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIj7wn5K4PC90ZXh0Pjwvc3ZnPg==">
+
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { margin: 0; font-family: 'Hiragino Kaku Gothic ProN','Meiryo',sans-serif; background: #F0F5FA; color: #1A2433; }
+
+/* ヘッダー */
+.header { background: #1A5F7A; padding: 14px 20px; padding-top: calc(14px + env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.header-title { color: #fff; font-weight: 800; font-size: 18px; }
+.header-sub { color: rgba(255,255,255,0.65); font-size: 12px; }
+
+/* 進捗ドット */
+.progress { display: flex; align-items: center; gap: 6px; }
+.dot-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; cursor: pointer; padding: 2px 6px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; transition: all 0.2s; }
+.dot-label { font-size: 10px; color: rgba(255,255,255,0.7); }
+.dot-label.active { color: #fff; font-weight: 700; }
+
+/* コンテンツ */
+.content { max-width: 800px; margin: 0 auto; padding: 20px 16px 100px; }
+
+/* カード */
+.card { background: #fff; border-radius: 14px; border: 1px solid #D4DDE8; padding: 20px; margin-bottom: 16px; }
+
+/* セクションタイトル */
+.section-title { font-size: 22px; font-weight: 800; color: #1A5F7A; text-align: center; margin-bottom: 6px; }
+.section-sub { font-size: 14px; color: #6B7A8D; text-align: center; margin-bottom: 20px; }
+
+/* ページドット */
+.page-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 18px; }
+.page-dot { width: 10px; height: 10px; border-radius: 50%; background: #D4DDE8; }
+.page-dot.active { background: #1A5F7A; }
+
+/* ラベル */
+.field-label { font-size: 14px; color: #6B7A8D; font-weight: 600; display: block; margin-bottom: 6px; }
+
+/* 入力 */
+input[type=text], input[type=number], input[type=time], input[type=date] {
+  width: 100%; padding: 13px 14px; font-size: 17px; border: 2px solid #D4DDE8; border-radius: 12px; outline: none; font-family: inherit;
+}
+input:focus { border-color: #1A5F7A; }
+
+/* グリッド */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.grid4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
+
+/* タッチラジオ */
+.touch-radio { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 52px; padding: 8px 6px; background: #fff; color: #1A2433; border: 2px solid #D4DDE8; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 400; text-align: center; line-height: 1.3; transition: all 0.12s; user-select: none; }
+.touch-radio.selected { background: #1A5F7A; color: #fff; border-color: #1A5F7A; font-weight: 700; }
+.touch-radio.yes-sel { background: #1A5F7A; color: #fff; border-color: #1A5F7A; font-weight: 700; }
+.touch-radio.no-sel { background: #555; color: #fff; border-color: #555; font-weight: 700; }
+
+/* 問タイトル */
+.q-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.q-block { margin-bottom: 18px; }
+.sub-label { font-size: 13px; color: #6B7A8D; margin-bottom: 4px; }
+
+/* 区切り */
+.divider { border: none; border-top: 1px solid #D4DDE8; margin: 16px 0; }
+
+/* ナビボタン */
+.nav-row { display: flex; justify-content: space-between; gap: 12px; margin-top: 20px; }
+.btn { padding: 16px 28px; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; border: 2px solid #1A5F7A; min-width: 130px; font-family: inherit; transition: opacity 0.1s; }
+.btn:active { opacity: 0.75; }
+.btn-primary { background: #1A5F7A; color: #fff; }
+.btn-outline { background: #fff; color: #1A5F7A; }
+.btn-disabled { background: #D4DDE8; color: #6B7A8D; border-color: #D4DDE8; cursor: not-allowed; }
+.btn-full { width: 100%; }
+
+/* インフォボックス */
+.info-box { background: #E8F4F8; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #1A5F7A; margin-bottom: 14px; }
+.warn-box { background: #FFF3CD; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #7A5500; margin-bottom: 14px; }
+
+/* STOP-BANG行 */
+.sb-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #D4DDE8; }
+.sb-row:last-child { border-bottom: none; }
+.sb-key { width: 36px; height: 36px; border-radius: 50%; background: #1A5F7A; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+.sb-label { flex: 1; font-size: 15px; line-height: 1.4; }
+.sb-btns { display: flex; gap: 8px; flex-shrink: 0; margin-top: 4px; }
+
+/* 結果スコアカード */
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.score-card { border-radius: 12px; padding: 16px 10px; text-align: center; border: 2px solid; background: #fff; }
+.sc-title { font-size: 12px; color: #6B7A8D; font-weight: 700; margin-bottom: 4px; }
+.sc-num { font-size: 36px; font-weight: 900; line-height: 1; }
+.sc-max { font-size: 12px; color: #6B7A8D; margin-bottom: 6px; }
+.sc-badge { border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 700; display: inline-block; }
+
+/* バーグラフ */
+.comp-row { display: flex; align-items: center; margin-bottom: 8px; }
+.comp-label { width: 100px; font-size: 12px; color: #6B7A8D; flex-shrink: 0; }
+.comp-bar-bg { flex: 1; height: 10px; background: #D4DDE8; border-radius: 5px; overflow: hidden; margin: 0 10px; }
+.comp-bar { height: 100%; border-radius: 5px; transition: width 0.4s; }
+.comp-score { width: 28px; font-size: 13px; font-weight: 700; text-align: right; }
+
+/* アラート */
+.alert-item { border-radius: 10px; padding: 10px 14px; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+
+/* モーダル */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000; display: flex; flex-direction: column; }
+.modal-header { background: #1A5F7A; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.modal-header span { color: #fff; font-weight: 700; font-size: 17px; }
+.modal-close { background: rgba(255,255,255,0.2); border: none; color: #fff; border-radius: 10px; padding: 8px 20px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.modal-iframe { flex: 1; border: none; background: #fff; }
+
+/* BMIボタン */
+.bmi-btn { padding: 13px 20px; background: #1A5F7A; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; width: 100%; margin-top: 8px; }
+
+/* 効率表示 */
+.eff-display { background: #E8F4F8; border-radius: 8px; padding: 8px 12px; font-size: 14px; color: #1A5F7A; margin-top: 8px; }
+
+/* hidden */
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<div class="header">
+  <div>
+    <div class="header-sub">小松トータルケアクリニック</div>
+    <div class="header-title">睡眠障害外来　問診スコアリング</div>
+  </div>
+  <div class="progress" id="progressDots"></div>
+</div>
+
+<!-- コンテンツ -->
+<div class="content" id="mainContent"></div>
+
+<!-- PDFモーダル -->
+<div class="modal-overlay hidden" id="pdfModal">
+  <div class="modal-header">
+    <span>📄 採点結果プレビュー</span>
+    <button class="modal-close" onclick="closePdf()">✕ 閉じる</button>
+  </div>
+  <iframe class="modal-iframe" id="pdfFrame" title="採点結果"></iframe>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// データ定義
+// ══════════════════════════════════════════
+const FREQ4 = ["なし","週1回未満","週1〜2回","週3回以上"];
+const QUAL4 = ["非常によい","かなりよい","かなり悪い","非常に悪い"];
+const PROB4 = ["全く問題なし","わずかに問題","いくらか問題","非常に大きな問題"];
+const ESS4  = ["眠らない","少し眠る","しばしば眠る","ほとんど眠る"];
+
+const Q5_ITEMS = [
+  ["q5a","30分以内に眠れなかった"],
+  ["q5b","夜中や早朝に目が覚めた"],
+  ["q5c","トイレに起きた"],
+  ["q5d","息苦しかった"],
+  ["q5e","咳・いびきが出た"],
+  ["q5f","寒く感じた"],
+  ["q5g","暑く感じた"],
+  ["q5h","悪夢をみた"],
+  ["q5i","痛みがあった"],
+  ["q5j","その他の理由"],
+];
+
+const ESS_ITEMS = [
+  "座って本・新聞などを読んでいるとき",
+  "テレビを見ているとき",
+  "会議・映画館など、公共の場所で座って何もしていないとき",
+  "1時間以上、車に乗せてもらっているとき",
+  "午後、横になって休憩しているとき",
+  "座って人と話しているとき",
+  "昼食後（お酒なし）、静かに座っているとき",
+  "車の運転中、交通渋滞で数分間止まっているとき",
+];
+
+const SB_ITEMS = [
+  ["S","大きないびきをかく（ドア越しに聞こえる、またはパートナーに指摘される）"],
+  ["T","日中に疲れ・強い眠気・だるさを感じることが多い"],
+  ["O","睡眠中に呼吸が止まっていると指摘されたことがある"],
+  ["P","高血圧の治療中、または高血圧と言われたことがある"],
+  ["B","BMIが28以上（スタッフが計算します）"],
+  ["A","50歳以上"],
+  ["N","首周囲径が40cm以上（スタッフが測定します）"],
+  ["G","男性"],
+];
+
+// ══════════════════════════════════════════
+// 状態
+// ══════════════════════════════════════════
+let state = {
+  step: 0,        // 0=患者情報 1=PSQI(p1) 2=PSQI(p2) 3=ESS(p1) 4=ESS(p2) 5=STOP-BANG 6=結果
+  name: "", date: new Date().toISOString().split("T")[0],
+  height: "", weight: "", neck: "", bmi: "",
+  psqi: {},
+  ess: Array(8).fill(null),
+  sb: Array(8).fill(null),
+};
+
+const STEPS = ["患者情報","PSQI①","PSQI②","ESS①","ESS②","STOP-BANG","結果"];
+const STEP_GROUPS = [0,1,1,2,2,3,4]; // 表示グループ（患者情報/PSQI/ESS/STOP-BANG/結果）
+const GROUP_LABELS = ["患者情報","PSQI","ESS","STOP-BANG","結果"];
+
+// ══════════════════════════════════════════
+// スコア計算
+// ══════════════════════════════════════════
+function calcPSQI() {
+  const p = state.psqi;
+  const n = v => (v===null||v===undefined) ? 0 : Number(v);
+  const toMin = t => { if(!t) return null; const[h,m]=t.split(":").map(Number); return h*60+m; };
+
+  const c1 = n(p.q6);
+
+  const lat = Number(p.q2)||0;
+  const latS = lat<16?0:lat<31?1:lat<61?2:3;
+  const c2r = latS + n(p.q5a);
+  const c2 = c2r===0?0:c2r<=2?1:c2r<=4?2:3;
+
+  const dur = Number(p.q4)||0;
+  const c3 = dur>7?0:dur>=6?1:dur>=5?2:3;
+
+  let c4=0, eff=null;
+  const bm=toMin(p.q1), wm=toMin(p.q3);
+  if(bm!==null&&wm!==null&&p.q4){
+    let inBed=wm-bm; if(inBed<=0)inBed+=1440;
+    eff=inBed>0?(Number(p.q4)*60)/inBed*100:null;
+    if(eff!==null) c4=eff>=85?0:eff>=75?1:eff>=65?2:3;
+  }
+
+  const dkeys=["q5b","q5c","q5d","q5e","q5f","q5g","q5h","q5i","q5j"];
+  const c5r=dkeys.reduce((s,k)=>s+n(p[k]),0);
+  const c5=c5r===0?0:c5r<=9?1:c5r<=18?2:3;
+
+  const c6=n(p.q7);
+  const c7r=n(p.q8)+n(p.q9);
+  const c7=c7r===0?0:c7r<=2?1:c7r<=4?2:3;
+
+  const comps={c1,c2,c3,c4,c5,c6,c7};
+  const total=Object.values(comps).reduce((a,b)=>a+b,0);
+  return {comps,total,eff};
+}
+
+function essTotal() { return state.ess.reduce((s,v)=>s+(v??0),0); }
+function sbTotal() { return state.sb.filter(Boolean).length; }
+
+function label(score, thresholds) {
+  // thresholds: [[max, text, color, bg], ...]
+  for(const [max,text,color,bg] of thresholds) {
+    if(score <= max) return {text,color,bg};
+  }
+  return thresholds[thresholds.length-1].slice(1);
+}
+const PSQI_LABELS = [[5,"良好","#1A6B3C","#D4EDDA"],[10,"中等度","#7A5500","#FFF3CD"],[21,"重度","#8B1A1A","#FDDEDE"]];
+const ESS_LABELS  = [[10,"正常","#1A6B3C","#D4EDDA"],[15,"中等度","#7A5500","#FFF3CD"],[24,"重度","#8B1A1A","#FDDEDE"]];
+const SB_LABELS   = [[2,"低リスク","#1A6B3C","#D4EDDA"],[4,"中リスク","#7A5500","#FFF3CD"],[8,"高リスク","#8B1A1A","#FDDEDE"]];
+
+// ══════════════════════════════════════════
+// 完了チェック
+// ══════════════════════════════════════════
+function psqi1Done() {
+  const p=state.psqi;
+  return p.q1&&p.q2&&p.q3&&p.q4&&Q5_ITEMS.every(([k])=>p[k]!==undefined&&p[k]!==null);
+}
+function psqi2Done() {
+  const p=state.psqi;
+  return [p.q6,p.q7,p.q8,p.q9].every(v=>v!==undefined&&v!==null);
+}
+function ess1Done() { return state.ess.slice(0,4).every(v=>v!==null); }
+function ess2Done() { return state.ess.slice(4,8).every(v=>v!==null); }
+function sbDone()   { return state.sb.every(v=>v!==null); }
+
+// ══════════════════════════════════════════
+// UI部品生成
+// ══════════════════════════════════════════
+function radioGroup(options, selected, onSelect, cols) {
+  const colClass = cols===4?"grid4":cols===2?"grid2":"grid2";
+  return `<div class="${colClass}">
+    ${options.map((opt,i)=>`
+      <div class="touch-radio${selected===i?" selected":""}" onclick="(${onSelect})(${i})">
+        ${opt}
+      </div>`).join("")}
+  </div>`;
+}
+
+function yesNo(val, onYes, onNo) {
+  return `<div style="display:flex;gap:10px;margin-top:8px">
+    <div class="touch-radio${val===true?" yes-sel":""}" style="flex:1;font-size:16px" onclick="(${onYes})()">はい</div>
+    <div class="touch-radio${val===false?" no-sel":""}" style="flex:1;font-size:16px" onclick="(${onNo})()">いいえ</div>
+  </div>`;
+}
+
+function navRow(leftLabel, leftAction, leftDisabled, rightLabel, rightAction, rightDisabled) {
+  const left = leftLabel
+    ? `<button class="btn btn-outline${leftDisabled?" btn-disabled":""}" onclick="${leftAction}" ${leftDisabled?"disabled":""}>${leftLabel}</button>`
+    : `<div></div>`;
+  const right = rightLabel
+    ? `<button class="btn btn-primary${rightDisabled?" btn-disabled":""}" onclick="${rightAction}" ${rightDisabled?"disabled":""}>${rightLabel}</button>`
+    : `<div></div>`;
+  return `<div class="nav-row">${left}${right}</div>`;
+}
+
+// ══════════════════════════════════════════
+// 各ステップのHTML生成
+// ══════════════════════════════════════════
+function renderStep0() {
+  const {name,date,height,weight,neck,bmi} = state;
+  const bmiNum = parseFloat(bmi);
+  return `
+    <div class="section-title" style="margin-bottom:4px">患者情報の確認</div>
+    <div class="section-sub">スタッフが記入してください</div>
+    <div class="card">
+      <label class="field-label">患者氏名（任意）</label>
+      <input type="text" value="${name}" placeholder="例：山田 太郎" oninput="state.name=this.value" style="margin-bottom:16px">
+
+      <div class="grid3" style="margin-bottom:12px">
+        <div>
+          <label class="field-label">身長（cm）</label>
+          <input type="number" value="${height}" placeholder="例：165" oninput="state.height=this.value">
+        </div>
+        <div>
+          <label class="field-label">体重（kg）</label>
+          <input type="number" value="${weight}" placeholder="例：70" oninput="state.weight=this.value">
+        </div>
+        <div>
+          <label class="field-label">首周囲径（cm）</label>
+          <input type="number" value="${neck}" placeholder="例：38" oninput="state.neck=this.value;state.sb[6]=parseFloat(this.value)>=40;rerender()">
+        </div>
+      </div>
+
+      <button class="bmi-btn" onclick="calcBmiAction()">BMIを計算する</button>
+
+      ${bmi ? `<div class="eff-display" style="margin-top:10px">
+        BMI <strong>${bmi}</strong>　→　${bmiNum>=28?"28以上（STOP-BANG B項目：Yes）":"28未満（STOP-BANG B項目：No）"}<br>
+        ${neck?`首周囲径 ${neck}cm　→　${parseFloat(neck)>=40?"40cm以上（N項目：Yes）":"40cm未満（N項目：No）"}`:""}
+      </div>` : ""}
+
+      <div style="margin-top:16px">
+        <label class="field-label">受診日</label>
+        <input type="date" value="${date}" oninput="state.date=this.value">
+      </div>
+    </div>
+    ${navRow("","",true,"PSQI へ進む →","goTo(1)",false)}
+  `;
+}
+
+function renderStep1() {
+  const p = state.psqi;
+  const showEff = p.q1&&p.q3&&p.q4;
+  let effHtml = "";
+  if(showEff){
+    const r = calcPSQI();
+    if(r.eff!==null) effHtml=`<div class="eff-display">睡眠効率（自動計算）：${r.eff.toFixed(0)}%</div>`;
+  }
+  return `
+    <div class="section-title">① PSQI　ピッツバーグ睡眠質問票</div>
+    <div class="section-sub">過去1か月間の、ふだんの睡眠についてお答えください</div>
+    <div class="page-dots"><div class="page-dot active"></div><div class="page-dot"></div></div>
+
+    <div class="card">
+      <div style="font-weight:700;font-size:15px;color:#1A5F7A;margin-bottom:14px">睡眠時間について</div>
+      <div class="grid2" style="margin-bottom:12px">
+        <div>
+          <label class="field-label">就床時刻</label>
+          <input type="time" value="${p.q1||""}" onchange="state.psqi.q1=this.value;rerender()">
+        </div>
+        <div>
+          <label class="field-label">起床時刻</label>
+          <input type="time" value="${p.q3||""}" onchange="state.psqi.q3=this.value;rerender()">
+        </div>
+        <div>
+          <label class="field-label">寝つくまでの時間（分）</label>
+          <input type="number" value="${p.q2||""}" placeholder="例：30" oninput="state.psqi.q2=this.value">
+        </div>
+        <div>
+          <label class="field-label">実際の睡眠時間（時間）</label>
+          <input type="number" value="${p.q4||""}" placeholder="例：5.5" step="0.5" oninput="state.psqi.q4=this.value">
+        </div>
+      </div>
+      ${effHtml}
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700;font-size:15px;color:#1A5F7A;margin-bottom:4px">問5：以下の理由で眠れなかった頻度は？</div>
+      <div class="info-box">なし ／ 週1回未満 ／ 週1〜2回 ／ 週3回以上</div>
+      ${Q5_ITEMS.map(([key,lbl])=>`
+        <div class="q-block">
+          <div class="sub-label">${lbl}</div>
+          ${radioGroup(FREQ4, p[key], `(v)=>{state.psqi['${key}']=v;rerender()}`, 4)}
+        </div>`).join("")}
+    </div>
+    ${navRow("← 患者情報","goTo(0)",false,"次へ →","goTo(2)",!psqi1Done())}
+  `;
+}
+
+function renderStep2() {
+  const p = state.psqi;
+  return `
+    <div class="section-title">① PSQI　ピッツバーグ睡眠質問票</div>
+    <div class="section-sub">過去1か月間の、ふだんの睡眠についてお答えください</div>
+    <div class="page-dots"><div class="page-dot"></div><div class="page-dot active"></div></div>
+
+    <div class="card">
+      ${[
+        ["q6","問6：この1か月の睡眠の質を全体として評価すると？",QUAL4,4],
+        ["q7","問7：眠るために薬を服用した頻度（処方薬・市販薬を含む）",FREQ4,4],
+        ["q8","問8：眠くて起きていられなくなった頻度（運転中・食事中など）",FREQ4,4],
+        ["q9","問9：物事をやり遂げる意欲の維持に問題はありましたか？",PROB4,2],
+      ].map(([key,lbl,opts,cols])=>`
+        <div class="q-block">
+          <div class="q-title">${lbl}</div>
+          ${radioGroup(opts, p[key], `(v)=>{state.psqi['${key}']=v;rerender()}`, cols)}
+        </div>`).join("")}
+    </div>
+    ${navRow("← 前へ","goTo(1)",false,"ESS へ進む →","goTo(3)",!psqi2Done())}
+  `;
+}
+
+function renderStep3() {
+  return `
+    <div class="section-title">② ESS　エプワース眠気尺度</div>
+    <div class="section-sub">各状況でどのくらいうとうとしてしまいそうですか？<br>（実際になったことがなくても、なったと想像してお答えください）</div>
+    <div class="page-dots"><div class="page-dot active"></div><div class="page-dot"></div></div>
+
+    <div class="card">
+      <div class="info-box">0＝眠らない　1＝少し眠る　2＝しばしば眠る　3＝ほとんど眠る</div>
+      ${ESS_ITEMS.slice(0,4).map((item,idx)=>`
+        <div class="q-block">
+          <div class="q-title"><span style="color:#6B7A8D;font-weight:700">${idx+1}. </span>${item}</div>
+          ${radioGroup(ESS4, state.ess[idx], `(v)=>{state.ess[${idx}]=v;rerender()}`, 4)}
+        </div>`).join("")}
+    </div>
+    ${navRow("← PSQI","goTo(2)",false,"次へ →","goTo(4)",!ess1Done())}
+  `;
+}
+
+function renderStep4() {
+  return `
+    <div class="section-title">② ESS　エプワース眠気尺度</div>
+    <div class="section-sub">各状況でどのくらいうとうとしてしまいそうですか？</div>
+    <div class="page-dots"><div class="page-dot"></div><div class="page-dot active"></div></div>
+
+    <div class="card">
+      <div class="info-box">0＝眠らない　1＝少し眠る　2＝しばしば眠る　3＝ほとんど眠る</div>
+      ${ESS_ITEMS.slice(4,8).map((item,idx)=>{
+        const i=idx+4;
+        return `<div class="q-block">
+          <div class="q-title"><span style="color:#6B7A8D;font-weight:700">${i+1}. </span>${item}${i===7?'<span style="color:#8B1A1A;font-size:13px;margin-left:8px">⚠️ 運転中</span>':""}</div>
+          ${radioGroup(ESS4, state.ess[i], `(v)=>{state.ess[${i}]=v;rerender()}`, 4)}
+        </div>`;
+      }).join("")}
+    </div>
+    ${navRow("← 前へ","goTo(3)",false,"STOP-BANG へ →","goTo(5)",!ess2Done())}
+  `;
+}
+
+function renderStep5() {
+  return `
+    <div class="section-title">③ STOP-BANG</div>
+    <div class="section-sub">各項目について「はい」か「いいえ」でお答えください</div>
+
+    <div class="card">
+      ${SB_ITEMS.map(([key,lbl],i)=>`
+        <div class="sb-row">
+          <div class="sb-key">${key}</div>
+          <div style="flex:1">
+            <div class="sb-label">${lbl}${(i===4||i===6)?'<span style="display:block;font-size:12px;color:#6B7A8D;margin-top:2px">（スタッフが確認します）</span>':""}</div>
+            ${yesNo(state.sb[i],
+              `()=>{state.sb[${i}]=true;rerender()}`,
+              `()=>{state.sb[${i}]=false;rerender()}`
+            )}
+          </div>
+        </div>`).join("")}
+    </div>
+    ${navRow("← ESS","goTo(4)",false,"結果を見る →","goTo(6)",!sbDone())}
+  `;
+}
+
+function renderStep6() {
+  const r = calcPSQI();
+  const et = essTotal();
+  const st = sbTotal();
+  const pL = label(r.total, PSQI_LABELS);
+  const eL = label(et, ESS_LABELS);
+  const sL = label(st, SB_LABELS);
+  const compNames = ["C1 睡眠の質","C2 入眠時間","C3 睡眠時間","C4 睡眠効率","C5 睡眠妨害","C6 睡眠薬使用","C7 日中機能"];
+  const compVals = [r.comps.c1,r.comps.c2,r.comps.c3,r.comps.c4,r.comps.c5,r.comps.c6,r.comps.c7];
+
+  const alerts = [
+    r.total>=11 && ["red","🔴 PSQI 重度（11点以上）：優先報告が必要です"],
+    r.total>=6&&r.total<=10 && ["yellow","🟡 PSQI 中等度（6〜10点）：治療介入を検討してください"],
+    r.comps.c6>=2 && ["red","🔴 睡眠薬の高頻度使用（C6≥2）：薬剤歴を詳しく確認してください"],
+    et>=16 && ["red","🔴 ESS 重度（16点以上）：日中機能に重大な影響あり"],
+    et>=11&&et<=15 && ["yellow","🟡 ESS 中等度（11〜15点）：SAS精査を検討してください"],
+    state.ess[7]>=2 && ["red","🔴 ESS問8（運転中）が2点以上：運転の安全性を確認してください"],
+    st>=5 && ["red","🔴 STOP-BANG 高リスク（5点以上）：簡易PSGの説明を準備してください"],
+    st>=3&&st<=4 && ["yellow","🟡 STOP-BANG 中リスク（3〜4点）：SAS精査の可能性について医師に相談"],
+    r.total<=5&&et<=10&&st<=2 && ["green","🟢 全スコア正常範囲。通常フォローアップを継続してください。"],
+  ].filter(Boolean);
+
+  return `
+    <div class="section-title">📋 採点結果</div>
+    ${state.name?`<div class="section-sub">${state.name}</div>`:""}
+
+    <div class="score-grid">
+      <div class="score-card" style="border-color:${pL.color}">
+        <div class="sc-title">PSQI</div>
+        <div class="sc-num" style="color:${pL.color}">${r.total}</div>
+        <div class="sc-max">/21点</div>
+        <div class="sc-badge" style="background:${pL.bg};color:${pL.color}">${pL.text}</div>
+      </div>
+      <div class="score-card" style="border-color:${eL.color}">
+        <div class="sc-title">ESS</div>
+        <div class="sc-num" style="color:${eL.color}">${et}</div>
+        <div class="sc-max">/24点</div>
+        <div class="sc-badge" style="background:${eL.bg};color:${eL.color}">${eL.text}</div>
+      </div>
+      <div class="score-card" style="border-color:${sL.color}">
+        <div class="sc-title">STOP-BANG</div>
+        <div class="sc-num" style="color:${sL.color}">${st}</div>
+        <div class="sc-max">/8点</div>
+        <div class="sc-badge" style="background:${sL.bg};color:${sL.color}">${sL.text}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700;font-size:15px;color:#1A5F7A;margin-bottom:14px">PSQI　コンポーネント内訳</div>
+      ${compNames.map((n,i)=>{
+        const s=compVals[i];
+        const pct=(s/3)*100;
+        const col=s===0?"#1A6B3C":s===1?"#F0A500":"#8B1A1A";
+        return `<div class="comp-row">
+          <div class="comp-label">${n}</div>
+          <div class="comp-bar-bg"><div class="comp-bar" style="width:${pct}%;background:${col}"></div></div>
+          <div class="comp-score" style="color:${col}">${s}/3</div>
+        </div>`;
+      }).join("")}
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700;font-size:15px;color:#1A5F7A;margin-bottom:12px">医師への報告事項</div>
+      ${alerts.map(([lv,txt])=>{
+        const bg=lv==="red"?"#FDDEDE":lv==="yellow"?"#FFF3CD":"#D4EDDA";
+        const col=lv==="red"?"#8B1A1A":lv==="yellow"?"#7A5500":"#1A6B3C";
+        return `<div class="alert-item" style="background:${bg};color:${col}">${txt}</div>`;
+      }).join("")}
+    </div>
+
+    <div style="display:flex;gap:12px">
+      <button class="btn btn-outline" style="flex:1" onclick="resetAll()">最初からやり直す</button>
+      <button class="btn btn-primary" style="flex:1" onclick="showPdf()">📄 PDFで表示</button>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════
+// アクション
+// ══════════════════════════════════════════
+function goTo(step) { state.step=step; rerender(); window.scrollTo(0,0); }
+
+function calcBmiAction() {
+  const h=parseFloat(state.height)/100, w=parseFloat(state.weight);
+  if(h>0&&w>0){
+    const b=(w/(h*h)).toFixed(1);
+    state.bmi=b;
+    state.sb[4]=parseFloat(b)>=28;
+    rerender();
+  }
+}
+
+function resetAll() {
+  state={...state,step:0,name:"",psqi:{},ess:Array(8).fill(null),sb:Array(8).fill(null),bmi:"",height:"",weight:"",neck:""};
+  rerender(); window.scrollTo(0,0);
+}
+
+function showPdf() {
+  const r=calcPSQI(), et=essTotal(), st=sbTotal();
+  const pL=label(r.total,PSQI_LABELS),eL=label(et,ESS_LABELS),sL=label(st,SB_LABELS);
+  const compNames=["C1 睡眠の質","C2 入眠時間","C3 睡眠時間","C4 睡眠効率","C5 睡眠妨害","C6 睡眠薬使用","C7 日中機能"];
+  const compVals=[r.comps.c1,r.comps.c2,r.comps.c3,r.comps.c4,r.comps.c5,r.comps.c6,r.comps.c7];
+  const today=new Date().toLocaleDateString("ja-JP",{year:"numeric",month:"long",day:"numeric"});
+  const alerts=[
+    r.total>=11&&["red","🔴 PSQI 重度（11点以上）：優先報告が必要です"],
+    r.total>=6&&r.total<=10&&["yellow","🟡 PSQI 中等度（6〜10点）：治療介入を検討してください"],
+    r.comps.c6>=2&&["red","🔴 睡眠薬の高頻度使用（C6≥2）：薬剤歴を詳しく確認してください"],
+    et>=16&&["red","🔴 ESS 重度（16点以上）：日中機能に重大な影響あり"],
+    et>=11&&et<=15&&["yellow","🟡 ESS 中等度（11〜15点）：SAS精査を検討してください"],
+    state.ess[7]>=2&&["red","🔴 ESS問8（運転中）が2点以上：運転の安全性を確認してください"],
+    st>=5&&["red","🔴 STOP-BANG 高リスク（5点以上）：簡易PSGの説明を準備してください"],
+    st>=3&&st<=4&&["yellow","🟡 STOP-BANG 中リスク（3〜4点）：SAS精査の可能性について医師に相談"],
+    r.total<=5&&et<=10&&st<=2&&["green","🟢 全スコア正常範囲。通常フォローアップを継続してください。"],
+  ].filter(Boolean);
+
+  const html=`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<style>
+body{font-family:'Hiragino Kaku Gothic ProN','Meiryo',sans-serif;font-size:13px;color:#1A2433;margin:16px;background:#F0F5FA;}
+h1{font-size:20px;color:#1A5F7A;margin:0 0 4px;}
+.sub{font-size:13px;color:#6B7A8D;margin-bottom:18px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px;}
+.sc{border-radius:10px;padding:14px 10px;text-align:center;border:2px solid;background:#fff;}
+.sc-t{font-size:12px;color:#6B7A8D;font-weight:700;margin-bottom:4px;}
+.sc-n{font-size:34px;font-weight:900;line-height:1;}
+.sc-m{font-size:12px;color:#6B7A8D;}
+.sc-b{border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;display:inline-block;margin-top:6px;}
+.sec{background:#fff;border-radius:10px;padding:16px;border:1px solid #D4DDE8;margin-bottom:14px;}
+.sec-t{font-size:14px;font-weight:700;color:#1A5F7A;margin-bottom:12px;}
+.cr{display:flex;align-items:center;margin-bottom:7px;}
+.cl{width:110px;font-size:12px;color:#6B7A8D;flex-shrink:0;}
+.cb{flex:1;height:10px;background:#D4DDE8;border-radius:5px;overflow:hidden;margin:0 10px;}
+.cs{width:30px;font-size:13px;font-weight:700;text-align:right;}
+.al{border-radius:8px;padding:8px 12px;margin-bottom:7px;font-size:13px;font-weight:600;}
+.ft{margin-top:20px;padding-top:10px;border-top:1px solid #D4DDE8;font-size:11px;color:#6B7A8D;text-align:center;}
+.pbtn{display:block;margin:0 auto 20px;padding:12px 40px;background:#1A5F7A;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;}
+</style></head><body>
+<button class="pbtn" onclick="window.print()">🖨️ 印刷 / PDF保存</button>
+<h1>睡眠障害外来　採点結果</h1>
+<div class="sub">小松トータルケアクリニック　${today}${state.name?"　患者："+state.name:""}</div>
+<div class="grid3">
+<div class="sc" style="border-color:${pL.color}"><div class="sc-t">PSQI</div><div class="sc-n" style="color:${pL.color}">${r.total}</div><div class="sc-m">/21点</div><div class="sc-b" style="background:${pL.bg};color:${pL.color}">${pL.text}</div></div>
+<div class="sc" style="border-color:${eL.color}"><div class="sc-t">ESS</div><div class="sc-n" style="color:${eL.color}">${et}</div><div class="sc-m">/24点</div><div class="sc-b" style="background:${eL.bg};color:${eL.color}">${eL.text}</div></div>
+<div class="sc" style="border-color:${sL.color}"><div class="sc-t">STOP-BANG</div><div class="sc-n" style="color:${sL.color}">${st}</div><div class="sc-m">/8点</div><div class="sc-b" style="background:${sL.bg};color:${sL.color}">${sL.text}</div></div>
+</div>
+<div class="sec"><div class="sec-t">PSQI　コンポーネント内訳</div>
+${compNames.map((n,i)=>{const s=compVals[i];const pct=(s/3)*100;const col=s===0?"#1A6B3C":s===1?"#F0A500":"#8B1A1A";return`<div class="cr"><div class="cl">${n}</div><div class="cb"><div style="width:${pct}%;height:100%;background:${col};border-radius:5px"></div></div><div class="cs" style="color:${col}">${s}/3</div></div>`;}).join("")}
+</div>
+<div class="sec"><div class="sec-t">医師への報告事項</div>
+${alerts.map(([lv,txt])=>{const bg=lv==="red"?"#FDDEDE":lv==="yellow"?"#FFF3CD":"#D4EDDA";const col=lv==="red"?"#8B1A1A":lv==="yellow"?"#7A5500":"#1A6B3C";return`<div class="al" style="background:${bg};color:${col}">${txt}</div>`;}).join("")}
+</div>
+<div class="ft">小松トータルケアクリニック　睡眠障害外来チーム</div>
+</body></html>`;
+
+  const frame=document.getElementById("pdfFrame");
+  frame.srcdoc=html;
+  document.getElementById("pdfModal").classList.remove("hidden");
+}
+
+function closePdf() {
+  document.getElementById("pdfModal").classList.add("hidden");
+}
+
+// ══════════════════════════════════════════
+// レンダリング
+// ══════════════════════════════════════════
+function rerender() {
+  // 進捗ドット更新
+  const grp = STEP_GROUPS[state.step];
+  document.getElementById("progressDots").innerHTML = GROUP_LABELS.map((lbl,i)=>`
+    <div class="dot-wrap" onclick="${i<grp?"goTo("+([0,1,3,5,6][i])+")":''}">
+      <div class="dot" style="background:${i<grp?"#2ecc71":i===grp?"#fff":"rgba(255,255,255,0.3)"}; ${i===grp?"border:3px solid rgba(255,255,255,0.5)":""}"></div>
+      <span class="dot-label${i===grp?" active":""}">${lbl}</span>
+    </div>`).join("");
+
+  // コンテンツ更新
+  const renders = [renderStep0,renderStep1,renderStep2,renderStep3,renderStep4,renderStep5,renderStep6];
+  document.getElementById("mainContent").innerHTML = renders[state.step]();
+}
+
+// 初期描画
+rerender();
+
+// 既存のService Workerがあれば登録解除（キャッシュによるオフラインエラー防止）
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(reg => reg.unregister());
+  });
+}
+</script>
+</body>
+</html>
